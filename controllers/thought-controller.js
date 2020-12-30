@@ -14,47 +14,114 @@ select: '-__v' })
     });
 },
 
-getPizzaById({ params }, res) {
-    Pizza.findOne({ _id: params.id })
-      .populate({
-        path: 'comments',
-        select: '-__v'
+createThoughts({ body } , res) {
+  Thoughts.create(body)
+  .then(dbThoughtsData => {
+      User.findOneAndUpdate(
+          { _id: body.userId },
+          { $push: { thoughts: dbThoughtsData._id } },
+          { new: true }
+      )
+      .then(dbUserData => {
+          if (!dbUserData) {
+              res.status(404).json({ message: 'No user found with this id' });
+              return;
+          }
+          res.json(dbUserData);
       })
-      .select('-__v')
-      .then(dbPizzaData => res.json(dbPizzaData))
-      .catch(err => {
-        console.log(err);
-        res.sendStatus(400);
-      });
-  },
-
-  // createPizza
-  createPizza({ body }, res) {
-    Pizza.create(body)
-      .then(dbPizzaData => res.json(dbPizzaData))
       .catch(err => res.json(err));
-  },
-
-  // update pizza by id
-  updatePizza({ params, body }, res) {
-    Pizza.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
-      .then(dbPizzaData => {
-        if (!dbPizzaData) {
-          res.status(404).json({ message: 'No pizza found with this id!' });
+  })
+  .catch(err => res.status(400).json(err));
+},
+updateThoughts({ params, body }, res) {
+    Thoughts.findOneAndUpdate(
+      { _id: params.id },
+      body,
+      { new: true }
+  )
+  .then(dbThoughtData => {
+      if (!dbThoughtData) {
+          res.status(404).json({ message: 'No thought found with this id' });
           return;
-        }
-        res.json(dbPizzaData);
-      })
-      .catch(err => res.json(err));
-  },
+      }
+      res.json(dbThoughtData);
+  })
+  .catch(err => res.status(400).json(err));
+},
 
-  // delete pizza
-  deletePizza({ params }, res) {
-    Pizza.findOneAndDelete({ _id: params.id })
-      .then(dbPizzaData => res.json(dbPizzaData))
-      .catch(err => res.json(err));
+
+deleteThoughts({ params }, res) {
+    Thoughts.findOneAndDelete({ _id: params.id })
+      .then(dbThoughtsData => {
+        if (!dbThoughtsData) {
+          res.status(404).json({ message: 'No Thoughts found with this id!' });
+          return;
   }
+
+  User.findOneAndUpdate(
+    {username: dbThoughtsData.username},
+  { $pull: { thoughts: params.id} }
+  )
+  .then(() =>{ res.json({message: 'Deleted!'});
+
+})
+
+.catch(err => res.status(500).json(err));
+})
+.catch(err => res.status(500).json(err));
+},
+
+
+
+    getThoughtsById({ params } , res) {
+    Thoughts.findOne({ _id: params.id })
+    .populate({ path: 'reactions', select: '-__v' })
+    .select('-__v')
+    .then(dbThoughtData => {
+        if (!dbThoughtData) {
+            res.status(404).json({message: 'No thought found with this id'});
+            return;
+        }
+        res.json(dbThoughtData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(400).json(err);
+    });
+},
+
+addReaction({ params, body }, res) {
+  Thought.findOneAndUpdate(
+      { _id: params.thoughtId },
+      { $addToSet: { reactions: body } },
+      { new: true, runValidators: true }
+  )
+  .then(dbThoughtData => {
+      if (!dbThoughtData) {
+          res.status(404).json({ message: 'No thought found with this id' });
+          return;
+      }
+      res.json(dbThoughtData);
+  })
+  .catch(err => res.status(500).json(err));
+},
+
+deleteReaction({ params, body }, res) {
+  Thought.findOneAndUpdate(
+      { _id: params.thoughtId },
+      { $pull: { reactions: { reactionId: body.reactionId } } },
+      { new: true, runValidators: true }
+  )
+  .then(dbThoughtData => {
+      if (!dbThoughtData) {
+          res.status(404).json({ message: 'No thought found with this id' });
+          return;
+      }
+      res.json({message: 'Successfully deleted the reaction'});
+  })
+  .catch(err => res.status(500).json(err));
+}
+
 };
 
-module.exports = pizzaController;
-
+module.exports = ThoughtsController;
