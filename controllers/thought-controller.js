@@ -3,7 +3,7 @@ const { Thoughts , User , React  } = require('../models');
 const ThoughtsController = {
 getAllThoughts(req , res) {
     Thoughts.find({})
-    .populate({ path: 'reactions', 
+    .populate({ path: 'React', 
 select: '-__v' })
     .select('-__v')
     .sort({_id: -1})
