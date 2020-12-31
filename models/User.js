@@ -13,7 +13,7 @@ const userSchema = new Schema({
         unique: true,
         match: [/.+@.+\..+/]
     },
-    thoughts: [{ type: Schema.Types.ObjectId, ref: 'Thought' }],
+    thoughts: [{ type: Schema.Types.ObjectId, ref: 'Thoughts' }],
     friends: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 },
 {
@@ -23,7 +23,7 @@ const userSchema = new Schema({
     id: false
 });
 
-userSchema.virtual('friendCount').get(function() {
+userSchema.virtual('Friends 🌎').get(function() {
     return this.friends.length;
 });
 
