@@ -53,7 +53,7 @@ const userController = {
         .catch(err => res.status(400).json(err));
     },
 
-    // DELETE /api/users/:id
+
     deleteUser({ params }, res) {
         // delete the user
         User.findOneAndDelete({ _id: params.id })
@@ -80,7 +80,6 @@ const userController = {
         .catch(err => res.status(400).json(err));
     },
 
-    // POST /api/users/:userId/friends/:friendId
     addFriend({ params }, res) {
         // add friendId to userId's friend list
         User.findOneAndUpdate(
@@ -111,7 +110,6 @@ const userController = {
         .catch(err => res.json(err));
     },
 
-    // DELETE /api/users/:userId/friends/:friendId
     deleteFriend({ params }, res) {
         // remove friendId from userId's friend list
         User.findOneAndUpdate(
